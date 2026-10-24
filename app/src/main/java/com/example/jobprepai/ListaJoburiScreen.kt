@@ -1,5 +1,6 @@
 package com.example.jobprepai
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -18,8 +19,10 @@ fun ListaJoburiScreen(
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         items(joburi) { job ->
-
-            Text(text = job.titlu) // Text temporar
+            Text(
+                text = job.titlu,
+                modifier = Modifier.clickable { onJobSelectat(job) }
+            )
         }
     }
 }
