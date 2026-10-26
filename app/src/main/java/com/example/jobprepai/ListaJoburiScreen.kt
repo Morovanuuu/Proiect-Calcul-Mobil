@@ -19,7 +19,7 @@ fun ListaJoburiScreen(
     joburi: List<Job>,
     onJobSelectat: (Job) -> Unit
 ) {
-    // Lista derulabila eficienta pentru randarea joburilor (similar cu RecyclerView)
+    // lista derulabila eficienta pentru randarea joburilor (similar cu RecyclerView)
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()

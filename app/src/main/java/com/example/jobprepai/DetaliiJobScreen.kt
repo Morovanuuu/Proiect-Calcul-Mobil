@@ -42,7 +42,7 @@ fun DetaliiJobScreen(
                 }
             )
         },
-        // Butonul fix de jos pentru Analiza AI (functionalitatea principala a aplicatiei)
+        // butonul fix de jos pentru Analiza AI (functionalitatea principala a aplicatiei)
         bottomBar = {
             Surface(
                 modifier = Modifier.fillMaxWidth(),
