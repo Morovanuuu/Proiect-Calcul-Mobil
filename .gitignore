@@ -1,1 +1,7 @@
 backend/.idea/
+# Python
+__pycache__/
+*.pyc
+
+# Setari locale Android Studio
+android/.idea/
