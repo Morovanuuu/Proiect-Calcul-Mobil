@@ -46,8 +46,9 @@ fun JobPrepApp() {
     //  Starea pentru a retine job-ul selectat
     var jobSelectat by remember { mutableStateOf<Job?>(null) }
 
-    // Verificam conexiunea cu backend-ul o singura data, la pornire
-    var stareBackend by remember { mutableStateOf("Backend: se conectează...") }
+    // Joburile vin de la backend (GET /jobs); stare = mesaj de incarcare/eroare, null cand avem lista
+    var joburi by remember { mutableStateOf<List<Job>>(emptyList()) }
+    var stare by remember { mutableStateOf<String?>("Se încarcă joburile...") }
     var poateConecta by remember { mutableStateOf(false) }
 
     // Android 17+ cere permisiunea ACCESS_LOCAL_NETWORK pentru 10.0.2.2 / IP-ul PC-ului din retea
@@ -67,10 +68,11 @@ fun JobPrepApp() {
 
     LaunchedEffect(poateConecta) {
         if (!poateConecta) return@LaunchedEffect
-        stareBackend = try {
-            "Backend: ${api.health().status}"
+        try {
+            joburi = api.jobs()
+            stare = null
         } catch (e: Exception) {
-            "Backend indisponibil: ${e.message}"
+            stare = "Backend indisponibil: ${e.message}"
         }
     }
 
@@ -81,9 +83,9 @@ fun JobPrepApp() {
 
     if (jobSelectat == null) {
         Column {
-            Text(stareBackend, modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp))
+            stare?.let { Text(it, modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) }
             ListaJoburiScreen(
-                joburi = listaJoburiTest,
+                joburi = joburi,
                 onJobSelectat = { job -> jobSelectat = job }
             )
         }

@@ -4,11 +4,9 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.GET
 
-data class HealthResponse(val status: String)
-
 interface ApiService {
-    @GET("health")
-    suspend fun health(): HealthResponse
+    @GET("jobs")
+    suspend fun jobs(): List<Job>
 }
 
 val api: ApiService = Retrofit.Builder()
