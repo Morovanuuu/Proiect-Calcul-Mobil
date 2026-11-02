@@ -46,7 +46,7 @@ JobPrepAI/
    uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
    ```
    Verificare: http://localhost:8000/health → `{"status":"ok"}`
-2. **Android:** deschide folderul `android/` în Android Studio și rulează pe emulator. Aplicația accesează backend-ul la `http://10.0.2.2:8000/` (adresa PC-ului văzută din emulator). Pe un telefon fizic, înlocuiește `BASE_URL` din `ApiService.kt` cu IP-ul PC-ului din rețeaua locală. Pe ecranul principal apare starea conexiunii (`Backend: ok`).
+2. **Android:** deschide folderul `android/` în Android Studio și rulează pe emulator. Aplicația accesează backend-ul la `http://10.0.2.2:8000/` (adresa PC-ului văzută din emulator). Pe un telefon fizic, adaugă în `android/local.properties` (fișier local, ignorat de git) linia `BACKEND_URL=http://<IP-ul PC-ului>:8000/` și pornește backend-ul cu `--host 0.0.0.0`. Fiecare calculator (PC, laptop) își păstrează propria valoare. La prima pornire, pe Android 17+, aplicația cere permisiunea de acces la rețeaua locală (dialogul „dispozitive din apropiere”) — fără ea nu poate ajunge la backend. Pe ecranul principal apare starea conexiunii (`Backend: ok`).
 
 ## 4. Funcționalități Implementate
 * **Profil Utilizator:** Formular pentru introducerea și salvarea locală a competențelor.
