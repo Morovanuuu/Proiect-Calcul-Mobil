@@ -123,7 +123,7 @@ fun DetaliiJobScreen(
                         tint = MaterialTheme.colorScheme.secondary
                     )
                     Text(
-                        text = "Locatie / Remote",
+                        text = job.locatie,
                         style = MaterialTheme.typography.bodyMedium
                     )
                 }
