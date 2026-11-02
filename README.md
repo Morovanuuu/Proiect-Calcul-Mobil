@@ -12,12 +12,41 @@ Fluxul este simplu și intuitiv: utilizatorul începe prin a-și completa un scu
 * **Sistemul / Asistentul AI (Backend logic):** Rulează în fundal pentru a procesa datele. Rolul său este să facă legătura între aplicația client, API-ul de joburi (pentru a furniza date la zi) și API-ul modelului de limbaj (pentru a oferi consultanță simulată de interviu).
 
 ## 3. Arhitectura Aplicației
-Aplicația va fi dezvoltată nativ în **Android Studio** folosind limbajul **Kotlin**, respectând bunele practici de dezvoltare software recomandate de Google:
-* **Arhitectură:** **MVVM (Model - View - ViewModel)** pentru o separare clară între interfața grafică și logica aplicatiei.
-* **Asincronism:** Folosirea **Kotlin Coroutines** pentru apelurile de rețea și accesarea bazei de date fără a bloca firul principal (Main Thread).
-* **Interfață (UI):** Navigare folosind componenta de *Navigation Graph* și *RecyclerView* pentru randarea eficientă a listelor.
-* **Persistența Datelor:** Baza de date locală **Room** pentru salvarea joburilor favorite și *SharedPreferences/DataStore* pentru setările profilului.
-* **Networking:** Biblioteca **Retrofit2** împreună cu Gson/Moshi pentru parsarea răspunsurilor JSON de la API-urile externe.
+Proiectul este un **monorepo** cu două componente: aplicația mobilă și un backend propriu care face legătura cu serviciile externe. Cheile API stau doar pe server, niciodată în APK.
+
+```
+JobPrepAI/
+├── android/   # aplicația Android (Kotlin + Jetpack Compose)
+└── backend/   # server FastAPI (Python)
+```
+
+```
+[Android app] --HTTP/JSON (Retrofit)--> [Backend FastAPI] --> Job Board API
+                                                          --> LLM API
+```
+
+**Android (`android/`)** – dezvoltat în **Android Studio** cu **Kotlin**:
+* **Interfață (UI):** **Jetpack Compose** + Material 3; listele sunt randate cu `LazyColumn`.
+* **Arhitectură:** **MVVM (Model - View - ViewModel)** pentru separarea interfeței de logica aplicației.
+* **Asincronism:** **Kotlin Coroutines** pentru apelurile de rețea și baza de date, fără a bloca Main Thread.
+* **Networking:** **Retrofit2** + Gson, apelează **doar backend-ul propriu** (`ApiService.kt`).
+* **Persistența Datelor:** **Room** pentru joburile favorite și *DataStore* pentru profil.
+
+**Backend (`backend/`)** – **FastAPI** (Python):
+* Expune endpoint-uri REST pentru aplicație (momentan `GET /health`).
+* Preia joburile de la Job Board API și apelează LLM-ul pentru ghidul de interviu.
+* Păstrează cheile API în `backend/.env` (vezi `backend/.env.example`).
+
+### Rulare locală
+1. **Backend:**
+   ```bash
+   cd backend
+   python -m venv venv && venv\Scripts\activate   # Windows
+   pip install -r requirements.txt
+   uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+   ```
+   Verificare: http://localhost:8000/health → `{"status":"ok"}`
+2. **Android:** deschide folderul `android/` în Android Studio și rulează pe emulator. Aplicația accesează backend-ul la `http://10.0.2.2:8000/` (adresa PC-ului văzută din emulator). Pe un telefon fizic, înlocuiește `BASE_URL` din `ApiService.kt` cu IP-ul PC-ului din rețeaua locală. Pe ecranul principal apare starea conexiunii (`Backend: ok`).
 
 ## 4. Funcționalități Implementate
 * **Profil Utilizator:** Formular pentru introducerea și salvarea locală a competențelor.
@@ -31,7 +60,7 @@ Aplicația va fi dezvoltată nativ în **Android Studio** folosind limbajul **Ko
 1. **Job Board API (Date):** [Adzuna API / Jooble API / Reed.co.uk API] - utilizat pentru a aduce feed-ul de joburi reale în aplicație.
 2. **LLM API:** [OpenAI API / Google Gemini API] - utilizat pentru modulul avansat de generare a sfaturilor de interviu.
 
-*Notă de securitate: Cheile API nu sunt incluse în acest repository. Pentru a rula proiectul local, trebuie creat un fișier `local.properties` în rădăcina proiectului cu valorile `JOB_API_KEY="..."` și `LLM_API_KEY="..."`.*
+*Notă de securitate: Cheile API nu sunt incluse în acest repository și nu ajung în aplicația Android. Pentru a rula proiectul local, copiază `backend/.env.example` în `backend/.env` și completează valorile (ex. `LLM_API_KEY=...`).*
 
 ## 6. Plan de Lucru și Termene (Livrabile)
 Dezvoltarea va urma o metodologie incrementală, planificată prin GitHub Projects, aliniată cu cerințele de evaluare:
