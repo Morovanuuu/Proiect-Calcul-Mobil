@@ -33,7 +33,7 @@ JobPrepAI/
 * **Persistența Datelor:** **Room** pentru joburile favorite și *DataStore* pentru profil.
 
 **Backend (`backend/`)** – **FastAPI** (Python):
-* Expune endpoint-uri REST pentru aplicație (momentan `GET /health`).
+* Expune endpoint-uri REST pentru aplicație (momentan `GET /health` și `GET /jobs` — lista de joburi, deocamdată date mock).
 * Preia joburile de la Job Board API și apelează LLM-ul pentru ghidul de interviu.
 * Păstrează cheile API în `backend/.env` (vezi `backend/.env.example`).
 
