@@ -12,6 +12,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -49,6 +50,8 @@ fun JobPrepApp() {
     // Joburile vin de la backend (GET /jobs); stare = mesaj de incarcare/eroare, null cand avem lista
     var joburi by remember { mutableStateOf<List<Job>>(emptyList()) }
     var stare by remember { mutableStateOf<String?>("Se încarcă joburile...") }
+    var eroare by remember { mutableStateOf(false) }
+    var incercare by remember { mutableStateOf(0) } // crescut de butonul "Reîncearcă" ca sa refaca apelul
     var poateConecta by remember { mutableStateOf(false) }
 
     // Android 17+ cere permisiunea ACCESS_LOCAL_NETWORK pentru 10.0.2.2 / IP-ul PC-ului din retea
@@ -66,13 +69,16 @@ fun JobPrepApp() {
         }
     }
 
-    LaunchedEffect(poateConecta) {
+    LaunchedEffect(poateConecta, incercare) {
         if (!poateConecta) return@LaunchedEffect
+        stare = "Se încarcă joburile..."
+        eroare = false
         try {
             joburi = api.jobs()
             stare = null
         } catch (e: Exception) {
             stare = "Backend indisponibil: ${e.message}"
+            eroare = true
         }
     }
 
@@ -84,6 +90,11 @@ fun JobPrepApp() {
     if (jobSelectat == null) {
         Column {
             stare?.let { Text(it, modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) }
+            if (eroare) {
+                Button(onClick = { incercare++ }, modifier = Modifier.padding(horizontal = 16.dp)) {
+                    Text("Reîncearcă")
+                }
+            }
             ListaJoburiScreen(
                 joburi = joburi,
                 onJobSelectat = { job -> jobSelectat = job }
