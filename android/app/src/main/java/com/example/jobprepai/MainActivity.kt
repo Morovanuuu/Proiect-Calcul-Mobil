@@ -9,19 +9,26 @@ import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material3.Button
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import kotlinx.coroutines.launch
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
@@ -82,25 +89,50 @@ fun JobPrepApp() {
         }
     }
 
+    // Favoritele din Room: raman salvate pe dispozitiv dupa repornirea aplicatiei
+    val dao = remember { FavoriteDb.get(context).dao() }
+    val favorite by remember { dao.toate() }.collectAsState(initial = emptyList())
+    var doarFavorite by remember { mutableStateOf(false) }
+    val scope = rememberCoroutineScope()
+
     // Butonul de back
     BackHandler(enabled = jobSelectat != null) {
         jobSelectat = null
     }
 
     if (jobSelectat == null) {
-        Column {
-            stare?.let { Text(it, modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) }
-            if (eroare) {
-                Button(onClick = { incercare++ }, modifier = Modifier.padding(horizontal = 16.dp)) {
-                    Text("Reîncearcă")
+        Column(modifier = Modifier.statusBarsPadding()) { // ca butoanele sa nu intre sub ceas/bara de stare
+            Row(
+                modifier = Modifier.padding(horizontal = 16.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                FilterChip(selected = !doarFavorite, onClick = { doarFavorite = false }, label = { Text("Toate") })
+                FilterChip(selected = doarFavorite, onClick = { doarFavorite = true }, label = { Text("Favorite (${favorite.size})") })
+            }
+            if (!doarFavorite) {
+                stare?.let { Text(it, modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) }
+                if (eroare) {
+                    Button(onClick = { incercare++ }, modifier = Modifier.padding(horizontal = 16.dp)) {
+                        Text("Reîncearcă")
+                    }
                 }
+            } else if (favorite.isEmpty()) {
+                Text("Nu ai salvat niciun job.", modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp))
             }
             ListaJoburiScreen(
-                joburi = joburi,
+                joburi = if (doarFavorite) favorite else joburi,
                 onJobSelectat = { job -> jobSelectat = job }
             )
         }
     } else {
-        DetaliiJobScreen(job = jobSelectat!!)
+        val job = jobSelectat!!
+        val esteFavorit = favorite.any { it.id == job.id }
+        DetaliiJobScreen(
+            job = job,
+            isFavorite = esteFavorit,
+            onFavoriteClick = {
+                scope.launch { if (esteFavorit) dao.sterge(job) else dao.salveaza(job) }
+            }
+        )
     }
 }
